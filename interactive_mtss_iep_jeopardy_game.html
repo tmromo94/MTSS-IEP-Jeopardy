@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTSS & IEP Jeopardy</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #0b1f75, #020b35);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      margin: 20px 0 10px;
+      color: gold;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 8px black;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.2rem;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .category {
+      background: #162da8;
+      border: 3px solid gold;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0,0,0,.4);
+    }
+
+    .cell {
+      background: #2447ff;
+      border: 3px solid gold;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: gold;
+      cursor: pointer;
+      transition: transform .2s, background .2s;
+      box-shadow: 0 0 10px rgba(0,0,0,.4);
+    }
+
+    .cell:hover {
+      transform: scale(1.04);
+      background: #3b5fff;
+    }
+
+    .cell.used {
+      visibility: hidden;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #10208a;
+      border: 4px solid gold;
+      border-radius: 20px;
+      max-width: 900px;
+      width: 100%;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 0 20px black;
+    }
+
+    .question {
+      font-size: 2rem;
+      line-height: 1.4;
+      margin-bottom: 30px;
+    }
+
+    .answer {
+      display: none;
+      font-size: 1.6rem;
+      margin-top: 20px;
+      color: #b8ffb8;
+      background: rgba(255,255,255,.08);
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    button {
+      background: gold;
+      color: #0b1f75;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .footer {
+      text-align: center;
+      margin: 30px 0 50px;
+      opacity: .8;
+    }
+
+    @media (max-width: 800px) {
+      .question {
+        font-size: 1.4rem;
+      }
+
+      .cell {
+        font-size: 1.4rem;
+        height: 80px;
+      }
+
+      .category {
+        font-size: .9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>MTSS & IEP JEOPARDY!</h1>
+  <div class="subtitle">Parent Workshop Review Game</div>
+
+  <div class="board" id="board"></div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="question" id="questionText"></div>
+
+      <button onclick="showAnswer()">Show Answer</button>
+      <button onclick="closeModal()">Close</button>
+
+      <div class="answer" id="answerText"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    MTSS supports all students • IEPs provide individualized support
+  </div>
+
+  <script>
+    const gameData = {
+      "MTSS Tiers": [
+        {
+          value: "$100",
+          question: "Which MTSS tier includes support for ALL students?",
+          answer: "Tier 1"
+        },
+        {
+          value: "$200",
+          question: "Which MTSS tier provides small-group interventions?",
+          answer: "Tier 2"
+        },
+        {
+          value: "$300",
+          question: "Which MTSS tier includes intensive individualized support?",
+          answer: "Tier 3"
+        }
+      ],
+
+      "IEP Vocabulary": [
+        {
+          value: "$100",
+          question: "What does IEP stand for?",
+          answer: "Individualized Education Program"
+        },
+        {
+          value: "$200",
+          question: "What is an accommodation?",
+          answer: "A support that helps a student access learning without changing expectations"
+        },
+        {
+          value: "$300",
+          question: "What is progress monitoring?",
+          answer: "Tracking student growth over time"
+        }
+      ],
+
+      "Parent Rights": [
+        {
+          value: "$100",
+          question: "Do parents have the right to participate in IEP meetings?",
+          answer: "Yes — parents are equal members of the IEP team"
+        },
+        {
+          value: "$200",
+          question: "Can parents ask questions and request clarification during meetings?",
+          answer: "Yes"
+        },
+        {
+          value: "$300",
+          question: "Can parents review educational records and evaluations?",
+          answer: "Yes"
+        }
+      ],
+
+      "School Supports": [
+        {
+          value: "$100",
+          question: "Name one related service schools may provide.",
+          answer: "Speech therapy, counseling, occupational therapy, etc."
+        },
+        {
+          value: "$200",
+          question: "What framework helps schools identify student needs early?",
+          answer: "MTSS"
+        },
+        {
+          value: "$300",
+          question: "Who works together to support student success?",
+          answer: "Families and educators"
+        }
+      ],
+
+      "Inclusive Education": [
+        {
+          value: "$100",
+          question: "Can students with IEPs participate in general education classrooms?",
+          answer: "Yes, whenever appropriate"
+        },
+        {
+          value: "$200",
+          question: "What is one goal of inclusive education?",
+          answer: "Access and participation for all students"
+        },
+        {
+          value: "$300",
+          question: "True or False: MTSS only supports students with disabilities.",
+          answer: "False"
+        }
+      ]
+    };
+
+    const board = document.getElementById('board');
+    const modal = document.getElementById('modal');
+    const questionText = document.getElementById('questionText');
+    const answerText = document.getElementById('answerText');
+
+    let currentAnswer = '';
+
+    const categories = Object.keys(gameData);
+
+    categories.forEach(category => {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'category';
+      catDiv.textContent = category;
+      board.appendChild(catDiv);
+    });
+
+    for (let row = 0; row < 3; row++) {
+      categories.forEach(category => {
+        const clue = gameData[category][row];
+
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = clue.value;
+
+        cell.onclick = () => {
+          questionText.textContent = clue.question;
+          answerText.textContent = clue.answer;
+          answerText.style.display = 'none';
+          modal.style.display = 'flex';
+          cell.classList.add('used');
+        };
+
+        board.appendChild(cell);
+      });
+    }
+
+    function showAnswer() {
+      answerText.style.display = 'block';
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+
+    window.onclick = function(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+</body>
+</html>
